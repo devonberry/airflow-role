@@ -6,28 +6,29 @@
 airflow_user_name: 'airflow'
 airflow_user_group: "{{ airflow_user_name }}"
 airflow_user_shell: '/bin/false'
-airflow_user_home_path: '/var/lib/airflow'
+airflow_user_home_path: '/home/airflow'
 airflow_user_home_mode: '0700'
+
+airflow_home: '/opt/airflow'
+airflow_home_owner: "{{ airflow_user_name }}"
+airflow_home_group: "{{ airflow_user_group }}"
+airflow_home_mode: '0755'
 
 airflow_log_path: '/var/log/airflow'
 airflow_log_owner: "{{ airflow_user_name }}"
 airflow_log_group: "{{ airflow_user_group }}"
-airflow_log_mode: '0700'
+airflow_log_mode: '0755'
 
 airflow_pid_path: '/var/run/airflow'
 airflow_pid_owner: "{{ airflow_user_name }}"
 airflow_pid_group: "{{ airflow_user_group }}"
-airflow_pid_mode: '0700'
+airflow_pid_mode: '0755'
 
 airflow_virtualenv: "{{ airflow_user_home_path }}/venv"
-airflow_python_version: 'python3.4'
+airflow_python_version: 'python2.7'
 airflow_packages:
-  - name: 'Cython'
-    version: '0.24'
   - name: 'airflow'
     version: '1.7.1.3'
-  - name: 'setuptools'
-    version: '23.0.0'
 airflow_extra_packages:
   - name: 'airflow[crypto]'
 airflow_system_dependencies: []
@@ -77,8 +78,8 @@ airflow_do_upgrade_db: True
 # Default configuration
 airflow_defaults_config:
   core:
-    home: "{{ airflow_user_home_path ~ '/airflow' }}"
-    dags_folder: "{{ airflow_user_home_path ~ '/airflow/dags' }}"
+    home: "{{ airflow_home_path }}"
+    dags_folder: "{{ airflow_home_path ~ '/dags' }}"
     base_log_folder: "{{ airflow_log_path }}"
     remote_base_log_folder: ''
     remote_log_conn_id: ''
@@ -93,7 +94,7 @@ airflow_defaults_config:
     non_pooled_task_slot_count: 128
     max_active_runs_per_dag: 16
     load_examples: False
-    plugins_folder: "{{ airflow_user_home_path ~ '/airflow/plugins' }}"
+    plugins_folder: "{{ airflow_home_path ~ '/plugins' }}"
     fernet_key: 'cryptography_not_found_storing_passwords_in_plain_text'
     donot_pickle: False
     dagbag_import_timeout: 30
