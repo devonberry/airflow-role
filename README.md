@@ -64,7 +64,7 @@ airflow_user_shell: '/bin/false'
 airflow_user_home_path: '/home/airflow'
 airflow_user_home_mode: '0700'
 
-airflow_home: '/opt/airflow'
+airflow_home_path: '/opt/airflow'
 airflow_home_owner: "{{ airflow_user_name }}"
 airflow_home_group: "{{ airflow_user_group }}"
 airflow_home_mode: '0755'
