@@ -3,7 +3,7 @@
 # Airflow services management
 
 - name: 'Manage webserver service with upstart'
-  become: True
+  become: true
   template:
     src: "{{ role_path }}/templates/upstart/airflow-webserver.conf.j2"
     dest: '/etc/init/airflow-webserver.conf'
@@ -13,9 +13,8 @@
   notify: 'Restart airflow-webserver'
   when: "{{ 'airflow-scheduler' in airflow_managed_upstart_services }}"
 
-
 - name: 'Manage webserver service with init.d'
-  become: True
+  become: true
   template:
     src: "{{ role_path }}/templates/init.d/airflow-webserver.j2"
     dest: '/etc/init.d/airflow-webserver'
@@ -25,9 +24,8 @@
   notify: 'Restart airflow-webserver'
   when: "{{ 'airflow-scheduler' in airflow_managed_initd_services }}"
 
-
 - name: 'Manage scheduler service with upstart'
-  become: True
+  become: true
   template:
     src: "{{ role_path }}/templates/upstart/airflow-scheduler.conf.j2"
     dest: '/etc/init/airflow-scheduler.conf'
@@ -37,9 +35,8 @@
   notify: 'Restart airflow-scheduler'
   when: "{{ 'airflow-scheduler' in airflow_managed_upstart_services }}"
 
-
 - name: 'Manage scheduler service with init.d'
-  become: True
+  become: true
   template:
     src: "{{ role_path }}/templates/init.d/airflow-scheduler.j2"
     dest: '/etc/init.d/airflow-scheduler'
@@ -49,10 +46,8 @@
   notify: 'Restart airflow-scheduler'
   when: "{{ 'airflow-scheduler' in airflow_managed_initd_services }}"
 
-
-# Services states
 - name: 'Manage airflow services states'
-  become: True
+  become: true
   service:
     name: "{{ item.name }}"
     enabled: "{{ item.enabled | default(False) }}"

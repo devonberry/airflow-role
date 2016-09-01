@@ -2,7 +2,6 @@
 
 # Airflow installation tasks
 
-# Manage system dependencies
 - name: 'Install native dependencies'
   become: True
   package:
@@ -10,10 +9,8 @@
     state: "{{ item.state | default('present') }}"
   with_items: "{{ airflow_system_dependencies }}"
 
-
-# Create user
 - name: 'Create airflow user'
-  become: True
+  become: true
   user:
     name: "{{ airflow_user_name }}"
     createhome: True
@@ -22,18 +19,15 @@
     shell: "{{ airflow_user_shell }}"
 
 - name: 'Manage airflow user home directory permissions'
-  become: True
+  become: true
   file:
     path: "{{ airflow_user_home_path }}"
     owner: "{{ airflow_user_name }}"
     group: "{{ airflow_user_group }}"
     mode: "{{ airflow_user_home_mode }}"
 
-
-# Install airflow packages
 - name: 'Install airflow and python dependencies'
-  become: True
-  become_user: "{{ airflow_user_name }}"
+  become: true
   pip:
     name: "{{ item.name }}"
     version: "{{ item.version }}"
@@ -42,11 +36,8 @@
     virtualenv_python: "{{ airflow_python_version }}"
   with_items: "{{ airflow_packages }}"
 
-
-# Install airflow extra packages
 - name: 'Install extra airflow packages'
-  become: True
-  become_user: "{{ airflow_user_name }}"
+  become: true
   pip:
     name: "{{ item.name }}"
     state: "{{ item.state | default('present') }}"
