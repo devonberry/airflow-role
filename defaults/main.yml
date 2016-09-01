@@ -13,6 +13,7 @@ airflow_home: '/opt/airflow'
 airflow_home_owner: "{{ airflow_user_name }}"
 airflow_home_group: "{{ airflow_user_group }}"
 airflow_home_mode: '0755'
+airflow_home_for_all_users: true  # Whether to set AIRFLOW_HOME in all user profiles (except root
 
 airflow_log_path: '/var/log/airflow'
 airflow_log_owner: "{{ airflow_user_name }}"

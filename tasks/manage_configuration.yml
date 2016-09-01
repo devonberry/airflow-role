@@ -2,7 +2,6 @@
 
 # Airflow configuration tasks
 
-# Check if configuration file exists
 - name: 'Stat airflow config file'
   become: True
   stat:
@@ -10,8 +9,6 @@
   register: 'airflow_config_stat'
   changed_when: False
 
-
-# Create airflow directory
 - name: 'Create airflow home directory'
   become: True
   file:
@@ -21,8 +18,6 @@
     mode: "{{ airflow_home_mode }}"
     state: 'directory'
 
-
-# Manage configuration templating
 - name: 'Write airflow config file'
   become: True
   become_user: "{{ airflow_user_name }}"
@@ -34,8 +29,6 @@
     mode: '0400'
   notify: 'Restart airflow'
 
-
-# Manage logs folder
 - name: 'Create airflow log folder'
   become: True
   file:
@@ -45,8 +38,6 @@
     mode: "{{ airflow_log_mode }}"
     state: 'directory'
 
-
-# Manage pid folder
 - name: 'Create airflow pid folder'
   become: True
   file:
@@ -56,8 +47,6 @@
     mode: "{{ airflow_pid_mode }}"
     state: 'directory'
 
-
-# Manage logrotate configuration
 - name: 'Configure airflow log rotation'
   become: True
   template:
@@ -68,22 +57,30 @@
     mode: '0644'
   with_items: "{{ airflow_logrotate_config }}"
 
-
-# Manage database initialize if first deployment
 - name: 'Initialize airflow database'
   become: True
   become_user: "{{ airflow_user_name }}"
   command: "{{ airflow_virtualenv }}/bin/airflow initdb"
   when:
     - "{{ not airflow_config_stat.stat.exists }}"
-    - "{{ airflow_do_init_db }}"
+    - "{{ airflow_do_init_db }}"  # first run
 
-
-# Manage database upgrade if not first deployment
 - name: 'Upgrade airflow database'
   become: True
   become_user: "{{ airflow_user_name }}"
   command: "{{ airflow_virtualenv }}/bin/airflow upgradedb"
   when:
     - "{{ airflow_config_stat.stat.exists }}"
-    - "{{ airflow_do_upgrade_db }}"
+    - "{{ airflow_do_upgrade_db }}"  # first run
+
+- name: 'Setting AIRFLOW_HOME in users profiles'
+  become: True
+  template:
+    src: "{{ role_path }}/templates/profile.d/airflow.j2"
+    dest: '/etc/profile.d/airflow'
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  when:
+    - "{{ airflow_home_for_all_users }}"
+    - "{{ airflow_do_upgrade_db }}"  # first run
