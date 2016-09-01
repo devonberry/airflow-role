@@ -137,7 +137,7 @@ airflow_defaults_config:
     remote_log_conn_id: ''
     encrypt_s3_logs: False
     executor: 'SequentialExecutor'
-    sql_alchemy_conn: 'sqlite:////var/lib/airflow/airflow/airflow.db'
+    sql_alchemy_conn: 'sqlite:////var/lib/airflow/airflow.db'
     sql_alchemy_pool_size: 5
     sql_alchemy_pool_recycle: 3600
     parallelism: 32
@@ -164,6 +164,7 @@ airflow_defaults_config:
     worker_class: sync
     expose_config: True
     authenticate: False
+    auth_backend: null   # airflow.contrib.auth.backends.password_auth
     filter_by_owner: False
 
   email:

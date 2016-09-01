@@ -102,6 +102,7 @@ expose_config = {{ airflow_config.webserver.expose_config }}
 # Set to true to turn on authentication:
 # http://pythonhosted.org/airflow/installation.html#web-authentication
 authenticate = {{ airflow_config.webserver.authenticate }}
+auth_backend = {{ airflow_config.webserver.auth_backend }}
 
 # Filter the list of dags by owner name (requires authentication to be enabled)
 filter_by_owner = {{ airflow_config.webserver.filter_by_owner }}
