@@ -13,7 +13,6 @@
 
 - name: 'Write airflow config file'
   become: true
-  become_user: "{{ airflow_user_name }}"
   template:
     src: "{{ role_path }}/templates/airflow.cfg.j2"
     dest: "{{ airflow_home_path }}/airflow.cfg"
@@ -52,14 +51,12 @@
 
 - name: 'Initialize airflow database'
   become: true
-  become_user: "{{ airflow_user_name }}"
   command: "{{ airflow_virtualenv }}/bin/airflow initdb"
   when:
     - "{{ airflow_do_init_db }}"  # first run
 
 - name: 'Upgrade airflow database'
   become: true
-  become_user: "{{ airflow_user_name }}"
   command: "{{ airflow_virtualenv }}/bin/airflow upgradedb"
   when:
     - "{{ airflow_do_upgrade_db }}"  # first run
