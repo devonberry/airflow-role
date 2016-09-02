@@ -52,12 +52,16 @@
 - name: 'Initialize airflow database'
   become: true
   command: "{{ airflow_virtualenv }}/bin/airflow initdb"
+  environment:
+    AIRFLOW_HOME: "{{ airflow_home_path }}"
   when:
     - "{{ airflow_do_init_db }}"
 
 - name: 'Upgrade airflow database'
   become: true
   command: "{{ airflow_virtualenv }}/bin/airflow upgradedb"
+  environment:
+    AIRFLOW_HOME: "{{ airflow_home_path }}"
   when:
     - "{{ airflow_do_upgrade_db }}"
 
