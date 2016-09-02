@@ -12,7 +12,7 @@
 dir="{{ airflow_virtualenv ~ '/bin' }}"
 pid_file="{{ airflow_scheduler_pid_file }}"
 log_file="{{ airflow_scheduler_log_file }}"
-cmd="env PATH=$dir:$PATH AIRFLOW_HOME={{ airflow_config.core.home }} airflow scheduler --daemon --num_runs {{ airflow_scheduler_runs }} --pid ${pid_file} --log_file ${log_file}"
+cmd="env PATH=$dir:$PATH AIRFLOW_HOME={{ airflow_config.core.home }} airflow scheduler --daemon --num_runs {{ airflow_scheduler_runs }} --pid ${pid_file} --log-file ${log_file}"
 user="{{airflow_user_name}}"
 
 name=`basename $0`

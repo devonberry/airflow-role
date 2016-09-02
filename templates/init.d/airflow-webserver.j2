@@ -15,7 +15,7 @@ debug="--debug"
 dir="{{ airflow_virtualenv ~ '/bin' }}"
 pid_file="{{ airflow_scheduler_pid_file }}"
 log_file="{{ airflow_scheduler_log_file }}"
-cmd="env PATH=$dir:$PATH AIRFLOW_HOME={{ airflow_config.core.home }} airflow webserver --daemon --port {{ airflow_webserver_port }} --workers {{ airflow_webserver_workers }} --workerclass {{ airflow_webserver_worker_class }} --worker_timeout {{ airflow_webserver_worker_timeout }} --hostname {{ airflow_webserver_hostname }} --pid ${pid_file} --log_file ${log_file} ${debug}"
+cmd="env PATH=$dir:$PATH AIRFLOW_HOME={{ airflow_config.core.home }} airflow webserver --daemon --port {{ airflow_webserver_port }} --workers {{ airflow_webserver_workers }} --workerclass {{ airflow_webserver_worker_class }} --worker_timeout {{ airflow_webserver_worker_timeout }} --hostname {{ airflow_webserver_hostname }} --pid ${pid_file} --log-file ${log_file} ${debug}"
 user="{{airflow_user_name}}"
 
 name=`basename $0`
