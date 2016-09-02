@@ -3,7 +3,7 @@
 # Airflow installation tasks
 
 - name: 'Install native dependencies'
-  become: True
+  become: true
   package:
     name: "{{ item.name }}"
     state: "{{ item.state | default('present') }}"
@@ -33,7 +33,6 @@
     version: "{{ item.version }}"
     state: "{{ item.state | default('present') }}"
     virtualenv: "{{ airflow_virtualenv }}"
-    virtualenv_python: "{{ airflow_python_version }}"
   with_items: "{{ airflow_packages }}"
 
 - name: 'Install extra airflow packages'
@@ -42,5 +41,4 @@
     name: "{{ item.name }}"
     state: "{{ item.state | default('present') }}"
     virtualenv: "{{ airflow_virtualenv }}"
-    virtualenv_python: "{{ airflow_python_version }}"
   with_items: "{{ airflow_extra_packages }}"
