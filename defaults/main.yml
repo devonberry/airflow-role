@@ -27,21 +27,29 @@ airflow_pid_mode: '0755'
 
 airflow_virtualenv: "{{ airflow_user_home_path }}/venv"
 airflow_python_version: 'python2.7'
-airflow_packages:
-  - name: 'thrift_sasl'
-    version: '0.2.1'
-  - name: 'hdfs'
-    version: '2.0.10'
+
+# Helper package definitions to help assemble custom installs in airflow_python_packages
+airflow_python_packages_airflow:
   - name: 'airflow'
     version: '1.7.1.3'
-airflow_extra_packages:  # module native dependencies should be added to airflow_native_dependencies
+airflow_python_packages_hdfs:
+  - name: 'hdfs'
+    version: '2.0.10'
+airflow_python_packages_hive:
+  - name: 'thrift_sasl'
+    version: '0.2.1'
+airflow_python_packages_mysql:
+  - name: 'mysql-python'
+    version: '1.2.5'
+# The python dependencies to be installed (including airflow)
+airflow_python_packages: "{{ airflow_python_packages_airflow | combine(airflow_python_packages_hdfs, airflow_python_packages_hive, recursive=True) }}"
+# Airflow modules to install (module native dependencies should be added to airflow_native_dependencies)
+airflow_modules:
   - name: 'airflow[crypto]'
   - name: 'airflow[hdfs]'
   - name: 'airflow[hive]'
-  - name: 'airflow[jdbc]'
   - name: 'airflow[password]'
   - name: 'airflow[s3]'
-  - name: 'airflow[slack]'
 # airflow_native_dependencies are defined in the native vars files
 
 # Services management

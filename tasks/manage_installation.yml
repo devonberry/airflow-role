@@ -33,12 +33,14 @@
     version: "{{ item.version }}"
     state: "{{ item.state | default('present') }}"
     virtualenv: "{{ airflow_virtualenv }}"
-  with_items: "{{ airflow_packages }}"
+    virtualenv_python: "{{ airflow_python_version }}"
+  with_items: "{{ airflow_python_packages }}"
 
-- name: 'Install extra airflow packages'
+- name: 'Install airflow modules'
   become: true
   pip:
     name: "{{ item.name }}"
     state: "{{ item.state | default('present') }}"
     virtualenv: "{{ airflow_virtualenv }}"
-  with_items: "{{ airflow_extra_packages }}"
+    virtualenv_python: "{{ airflow_python_version }}"
+  with_items: "{{ airflow_modules }}"

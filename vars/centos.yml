@@ -5,7 +5,7 @@
 airflow_native_dependencies:
   - name: 'gcc'                                                  # crypto
   - name: 'libffi-devel'                                         # crypto
-  - name: "{{ airflow_python_version|replace('.', '') }}-devel"  # crypto
+  - name: 'python-devel'                                         # crypto
   - name: 'openssl-devel'                                        # crypto
   - name: 'cyrus-sasl-devel'                                     # hive
   - name: 'cyrus-sasl-plain'                                     # hive
