@@ -53,22 +53,21 @@
   become: true
   command: "{{ airflow_virtualenv }}/bin/airflow initdb"
   when:
-    - "{{ airflow_do_init_db }}"  # first run
+    - "{{ airflow_do_init_db }}"
 
 - name: 'Upgrade airflow database'
   become: true
   command: "{{ airflow_virtualenv }}/bin/airflow upgradedb"
   when:
-    - "{{ airflow_do_upgrade_db }}"  # first run
+    - "{{ airflow_do_upgrade_db }}"
 
 - name: 'Setting AIRFLOW_HOME in users profiles'
   become: true
   template:
     src: "{{ role_path }}/templates/profile.d/airflow.j2"
-    dest: '/etc/profile.d/airflow'
+    dest: '/etc/profile.d/airflow.sh'
     owner: 'root'
     group: 'root'
-    mode: '0755'
+    mode: '0644'
   when:
     - "{{ airflow_home_for_all_users }}"
-    - "{{ airflow_do_upgrade_db }}"  # first run
