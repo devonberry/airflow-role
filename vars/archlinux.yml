@@ -2,8 +2,15 @@
 
 # ArchLinux native dependencies
 
-airflow_native_dependencies:
-  - name: 'python2'               # core + crypto
-  - name: 'python2-cryptography'  # crypto
-  - name: 'libsasl'               # hive
-  - name: 'cyrus-sasl-gssapi'     # hive
+airflow_native_crypto:
+#  - name: 'python2'
+  - name: 'python2-cryptography'
+
+airflow_native_hive:
+  - name: 'libsasl'
+  - name: 'cyrus-sasl-gssapi'
+
+airflow_native_mysql:
+  - name: 'libmysqlclient'
+
+airflow_native_dependencies: "{{ airflow_native_crypto + airflow_native_hive + airflow_native_mysql }}"

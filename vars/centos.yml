@@ -2,11 +2,18 @@
 
 # CentOS specific values
 
-airflow_native_dependencies:
-  - name: 'gcc'                                                  # crypto
-  - name: 'libffi-devel'                                         # crypto
-  - name: 'python-devel'                                         # crypto
-  - name: 'openssl-devel'                                        # crypto
-  - name: 'cyrus-sasl-devel'                                     # hive
-  - name: 'cyrus-sasl-plain'                                     # hive
-  - name: 'cyrus-sasl-gssapi'                                    # hive
+airflow_native_crypto:
+  - name: 'gcc'
+  - name: 'libffi-devel'
+  - name: 'python-devel'
+  - name: 'openssl-devel'
+
+airflow_native_hive:
+  - name: 'cyrus-sasl-devel'
+  - name: 'cyrus-sasl-plain'
+  - name: 'cyrus-sasl-gssapi'
+
+airflow_native_mysql:
+  - name: 'mysql-devel'
+
+airflow_native_dependencies: "{{ airflow_native_crypto + airflow_native_hive + airflow_native_mysql }}"

@@ -2,10 +2,17 @@
 
 # Debian specific values
 
-airflow_native_dependencies:
+airflow_native_crypto:
   - name: 'build-essential'                   # crypto
   - name: 'libssl-dev'                        # crypto
   - name: 'libffi-dev'                        # crypto
   - name: "{{ airflow_python_version }}-dev"  # crypto
+
+airflow_native_hive:
   - name: 'libsasl2-dev'                      # hive
   - name: 'libsasl2-modules'                  # hive
+
+airflow_native_mysql:
+  - name: 'libmysqlclient-dev'
+
+airflow_native_dependencies: "{{ airflow_native_crypto + airflow_native_hive + airflow_native_mysql }}"
