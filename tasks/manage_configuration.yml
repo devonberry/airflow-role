@@ -2,13 +2,6 @@
 
 # Airflow configuration tasks
 
-- name: 'Stat airflow config file'
-  become: true
-  stat:
-    path: "{{ airflow_home_path }}/airflow.cfg"
-  register: 'airflow_config_stat'
-  changed_when: false
-
 - name: 'Create airflow home directory'
   become: true
   file:
@@ -62,7 +55,6 @@
   become_user: "{{ airflow_user_name }}"
   command: "{{ airflow_virtualenv }}/bin/airflow initdb"
   when:
-    - "{{ not airflow_config_stat.stat.exists }}"
     - "{{ airflow_do_init_db }}"  # first run
 
 - name: 'Upgrade airflow database'
@@ -70,7 +62,6 @@
   become_user: "{{ airflow_user_name }}"
   command: "{{ airflow_virtualenv }}/bin/airflow upgradedb"
   when:
-    - "{{ airflow_config_stat.stat.exists }}"
     - "{{ airflow_do_upgrade_db }}"  # first run
 
 - name: 'Setting AIRFLOW_HOME in users profiles'
