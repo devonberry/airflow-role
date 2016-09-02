@@ -1,0 +1,5 @@
+---
+
+# RedHat specific values
+
+include_vars: "{{ role_path }}/vars/centos.yml"

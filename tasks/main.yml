@@ -2,23 +2,24 @@
 
 # Main tasks file for airflow role
 
-# Installation tasks management
+- name: 'Include native dependencies'
+  include_vars: "{{ role_path }}/vars/{{ ansible_distribution | lower }}.yml"
+  tags:
+    - 'install'
+    - 'airflow'
+
 - name: 'Include installation tasks'
   include: "{{ role_path }}/tasks/manage_installation.yml"
   tags:
     - 'install'
     - 'airflow'
 
-
-# Configuration tasks management
 - name: 'Include configuration tasks'
   include: "{{ role_path }}/tasks/manage_configuration.yml"
   tags:
     - 'config'
     - 'airflow'
 
-
-# Services tasks management
 - name: 'Include services configuration tasks'
   include: "{{ role_path }}/tasks/manage_services.yml"
   tags:

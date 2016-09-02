@@ -68,7 +68,7 @@ airflow_home_path: '/opt/airflow'
 airflow_home_owner: "{{ airflow_user_name }}"
 airflow_home_group: "{{ airflow_user_group }}"
 airflow_home_mode: '0755'
-airflow_home_for_all_users: true  # Whether to set AIRFLOW_HOME in all user profiles (except root)
+airflow_home_for_all_users: true  # Whether to set AIRFLOW_HOME in all user profiles (except root
 
 airflow_log_path: '/var/log/airflow'
 airflow_log_owner: "{{ airflow_user_name }}"
@@ -83,21 +83,34 @@ airflow_pid_mode: '0755'
 airflow_virtualenv: "{{ airflow_user_home_path }}/venv"
 airflow_python_version: 'python2.7'
 airflow_packages:
+  - name: 'thrift_sasl'
+    version: '0.2.1'
+  - name: 'hdfs'
+    version: '2.0.10'
   - name: 'airflow'
     version: '1.7.1.3'
-airflow_extra_packages:
+airflow_extra_packages:  # module native dependencies should be added to airflow_native_dependencies
   - name: 'airflow[crypto]'
-airflow_system_dependencies: []
+  - name: 'airflow[hdfs]'
+  - name: 'airflow[hive]'
+  - name: 'airflow[jdbc]'
+  - name: 'airflow[password]'
+  - name: 'airflow[s3]'
+  - name: 'airflow[slack]'
+# airflow_native_dependencies are defined in the native vars files
 
 # Services management
-airflow_managed_upstart_services:
+airflow_managed_upstart_services: []
+airflow_managed_initd_services:
   - 'airflow-scheduler'
   - 'airflow-webserver'
 
 airflow_services_states:
   - name: 'airflow-webserver'
+    enabled: True
     state: 'started'
   - name: 'airflow-scheduler'
+    enabled: True
     state: 'started'
 
 # Webserver service configuration
@@ -137,7 +150,7 @@ airflow_defaults_config:
     remote_log_conn_id: ''
     encrypt_s3_logs: False
     executor: 'SequentialExecutor'
-    sql_alchemy_conn: 'sqlite:////var/lib/airflow/airflow.db'
+    sql_alchemy_conn: 'sqlite:////opt/airflow/airflow.db'
     sql_alchemy_pool_size: 5
     sql_alchemy_pool_recycle: 3600
     parallelism: 32
@@ -209,7 +222,7 @@ airflow_defaults_config:
     default_secret: 'admin'
 
 airflow_user_config: {}
-airflow_config: "{{ airflow_defaults_config | combine(airflow_user_config) }}"
+airflow_config: "{{ airflow_defaults_config | combine(airflow_user_config, recursive=True) }}"
 
 # Logrotate configuration
 airflow_logrotate_config:

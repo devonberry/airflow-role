@@ -1,0 +1,11 @@
+---
+
+# Debian specific values
+
+airflow_native_dependencies:
+  - name: 'build-essential'                   # crypto
+  - name: 'libssl-dev'                        # crypto
+  - name: 'libffi-dev'                        # crypto
+  - name: "{{ airflow_python_version }}-dev"  # crypto
+  - name: 'libsasl2-dev'                      # hive
+  - name: 'libsasl2-modules'                  # hive

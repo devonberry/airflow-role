@@ -7,7 +7,7 @@
   package:
     name: "{{ item.name }}"
     state: "{{ item.state | default('present') }}"
-  with_items: "{{ airflow_system_dependencies }}"
+  with_items: "{{ airflow_native_dependencies }}"
 
 - name: 'Create airflow user'
   become: true
