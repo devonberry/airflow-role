@@ -5,7 +5,25 @@
 - name: 'Create airflow home directory'
   become: true
   file:
-    path: "{{ airflow_home_path }}"
+    path: "{{ airflow_config.core.home }}"
+    owner: "{{ airflow_user_name }}"
+    group: "{{ airflow_user_group }}"
+    mode: "{{ airflow_home_mode }}"
+    state: 'directory'
+
+- name: 'Create airflow DAG directory'
+  become: true
+  file:
+    path: "{{ airflow_config.core.dags_folder }}"
+    owner: "{{ airflow_user_name }}"
+    group: "{{ airflow_user_group }}"
+    mode: "{{ airflow_home_mode }}"
+    state: 'directory'
+
+- name: 'Create airflow plugins directory'
+  become: true
+  file:
+    path: "{{ airflow_config.core.plugins_folder }}"
     owner: "{{ airflow_user_name }}"
     group: "{{ airflow_user_group }}"
     mode: "{{ airflow_home_mode }}"
