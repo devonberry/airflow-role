@@ -13,13 +13,13 @@
 debug="--debug"
 {% endif %}
 dir="{{ airflow_virtualenv ~ '/bin' }}"
-pid_file="{{ airflow_scheduler_pid_file }}"
-log_file="{{ airflow_scheduler_log_file }}"
+pid_file="{{ airflow_webserver_pid_file }}"
+log_file="{{ airflow_webserver_log_file }}"
 cmd="env PATH=$dir:$PATH AIRFLOW_HOME={{ airflow_config.core.home }} airflow webserver --daemon --port {{ airflow_webserver_port }} --workers {{ airflow_webserver_workers }} --workerclass {{ airflow_webserver_worker_class }} --worker_timeout {{ airflow_webserver_worker_timeout }} --hostname {{ airflow_webserver_hostname }} --pid ${pid_file} --log-file ${log_file} ${debug}"
 user="{{airflow_user_name}}"
 
 name=`basename $0`
-stdout_log="{{ airflow_log_path }}/$name.log"
+stdout_log="{{ airflow_log_path }}/$name.out"
 stderr_log="{{ airflow_log_path }}/$name.err"
 
 get_pid() {
@@ -42,11 +42,24 @@ case "$1" in
         else
             sudo -u "$user" $cmd >> >(sudo -u "$user" tee "$stdout_log") 2>> >(sudo -u "$user" tee "$stderr_log" >&2) &
         fi
-        echo $! > "$pid_file"
-        if ! is_running; then
-            echo "Unable to start, see $stdout_log and $stderr_log"
-            exit 1
+
+        # Airflow will asynchronously create the PID file
+        # echo $! > "$pid_file"
+        for i in {1..10}
+        do
+            if is_running; then
+                break
+            fi
+
+            echo -n "."
+            sleep 1
+        done
+
+        if !is_running; then
+          echo "Unable to start, see $stderr_log and $stdout_log"
+          exit 1
         fi
+        echo "Started"
     fi
     ;;
     stop)

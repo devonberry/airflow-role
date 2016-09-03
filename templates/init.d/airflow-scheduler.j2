@@ -16,7 +16,7 @@ cmd="env PATH=$dir:$PATH AIRFLOW_HOME={{ airflow_config.core.home }} airflow sch
 user="{{airflow_user_name}}"
 
 name=`basename $0`
-stdout_log="{{ airflow_log_path }}/$name.log"
+stdout_log="{{ airflow_log_path }}/$name.out"
 stderr_log="{{ airflow_log_path }}/$name.err"
 
 get_pid() {
@@ -39,11 +39,24 @@ case "$1" in
         else
             sudo -u "$user" $cmd >> >(sudo -u "$user" tee "$stdout_log") 2>> >(sudo -u "$user" tee "$stderr_log" >&2) &
         fi
-        echo $! > "$pid_file"
-        if ! is_running; then
-            echo "Unable to start, see $stdout_log and $stderr_log"
-            exit 1
+        
+        # Airflow will asynchronously create the PID file
+        # echo $! > "$pid_file"
+        for i in {1..10}
+        do
+            if is_running; then
+                break
+            fi
+
+            echo -n "."
+            sleep 1
+        done
+
+        if !is_running; then
+          echo "Unable to start, see $stderr_log and $stdout_log"
+          exit 1
         fi
+        echo "Started"
     fi
     ;;
     stop)
