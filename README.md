@@ -82,22 +82,34 @@ airflow_pid_mode: '0755'
 
 airflow_virtualenv: "{{ airflow_user_home_path }}/venv"
 airflow_python_version: 'python2.7'
-airflow_packages:
-  - name: 'thrift_sasl'
-    version: '0.2.1'
-  - name: 'hdfs'
-    version: '2.0.10'
+
+# airflow_native_dependencies are defined in the native vars files
+
+# Helper package definitions to help assemble custom installs in airflow_python_packages
+airflow_python_packages_airflow:
   - name: 'airflow'
     version: '1.7.1.3'
-airflow_extra_packages:  # module native dependencies should be added to airflow_native_dependencies
+airflow_python_packages_hdfs:
+  - name: 'hdfs'
+    version: '2.0.10'
+airflow_python_packages_hive:
+  - name: 'thrift_sasl'
+    version: '0.2.1'
+airflow_python_packages_mysql:
+  - name: 'mysql-python'
+    version: '1.2.5'
+# The python dependencies to be installed (including airflow)
+airflow_python_packages: "{{ airflow_python_packages_hdfs + airflow_python_packages_hive + airflow_python_packages_mysql + airflow_python_packages_airflow }}"
+
+# Airflow modules to install (module native dependencies should be added to airflow_native_dependencies)
+airflow_modules:
   - name: 'airflow[crypto]'
   - name: 'airflow[hdfs]'
   - name: 'airflow[hive]'
-  - name: 'airflow[jdbc]'
+  - name: 'airflow[mysql]'
   - name: 'airflow[password]'
   - name: 'airflow[s3]'
-  - name: 'airflow[slack]'
-# airflow_native_dependencies are defined in the native vars files
+
 
 # Services management
 airflow_managed_upstart_services: []
@@ -113,12 +125,7 @@ airflow_services_states:
     enabled: True
     state: 'started'
 
-# Webserver service configuration
-airflow_webserver_port: 8080
-airflow_webserver_workers: 1
-airflow_webserver_worker_class: 'sync'
-airflow_webserver_worker_timeout: 30
-airflow_webserver_hostname: "{{ ansible_default_ipv4.address }}"
+# Webserver meta-service configuration (see airflow_defaults_config.webserver for server config)
 airflow_webserver_pid_file: "{{ airflow_pid_path }}/airflow-webserver.pid"
 airflow_webserver_log_file: "{{ airflow_log_path }}/airflow-webserver.log"
 airflow_webserver_debug: False

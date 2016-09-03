@@ -70,12 +70,7 @@ airflow_services_states:
     enabled: True
     state: 'started'
 
-# Webserver service configuration
-airflow_webserver_port: 8080
-airflow_webserver_workers: 1
-airflow_webserver_worker_class: 'sync'
-airflow_webserver_worker_timeout: 30
-airflow_webserver_hostname: "{{ ansible_default_ipv4.address }}"
+# Webserver meta-service configuration (see airflow_defaults_config.webserver for server config)
 airflow_webserver_pid_file: "{{ airflow_pid_path }}/airflow-webserver.pid"
 airflow_webserver_log_file: "{{ airflow_log_path }}/airflow-webserver.log"
 airflow_webserver_debug: False
