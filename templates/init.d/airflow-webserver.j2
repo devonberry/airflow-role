@@ -55,7 +55,7 @@ case "$1" in
             sleep 1
         done
 
-        if !is_running; then
+        if ! is_running; then
           echo "Unable to start, see $stderr_log and $stdout_log"
           exit 1
         fi

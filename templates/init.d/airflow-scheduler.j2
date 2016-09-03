@@ -39,7 +39,7 @@ case "$1" in
         else
             sudo -u "$user" $cmd >> >(sudo -u "$user" tee "$stdout_log") 2>> >(sudo -u "$user" tee "$stderr_log" >&2) &
         fi
-        
+
         # Airflow will asynchronously create the PID file
         # echo $! > "$pid_file"
         for i in {1..10}
@@ -52,7 +52,7 @@ case "$1" in
             sleep 1
         done
 
-        if !is_running; then
+        if ! is_running; then
           echo "Unable to start, see $stderr_log and $stdout_log"
           exit 1
         fi
