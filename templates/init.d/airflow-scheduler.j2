@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ### BEGIN INIT INFO
 # Provides:          airflow-scheduler
 # Required-Start:    $remote_fs $syslog
@@ -37,7 +37,7 @@ case "$1" in
         if [ -z "$user" ]; then
             sudo $cmd >> "$stdout_log" 2>> "$stderr_log" &
         else
-            sudo -u "$user" $cmd >> "$stdout_log" 2>> "$stderr_log" &
+            sudo -u "$user" $cmd >> >(sudo -u "$user" tee "$stdout_log") 2>> >(sudo -u "$user" tee "$stderr_log" >&2) &
         fi
         echo $! > "$pid_file"
         if ! is_running; then
