@@ -93,3 +93,12 @@
     mode: '0644'
   when:
     - "{{ airflow_home_for_all_users }}"
+
+- name: 'Refreshing DAGs folder from git'
+  become: true
+  git:
+    repo: "{{ airflow_git.repo }}"
+    dest: "{{ airflow_config.core.dags_folder }}"
+    version: "{{ airflow_git.version }}"
+  when:
+    - "{{ airflow_git.repo }}"

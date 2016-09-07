@@ -189,3 +189,8 @@ airflow_logrotate_config:
       - "create 640 {{ airflow_log_owner }} {{ airflow_log_group }}"
       - 'postrotate'
       - 'endscript'
+
+# DAG git repository config (optional), see http://docs.ansible.com/ansible/git_module.html for options
+airflow_git:
+  - repo: null       # The repo to check out to airflow_config.core.dags_folder
+    version: 'HEAD'
