@@ -2,13 +2,13 @@
 
 [core]
 # The home folder for airflow
-airflow_home = {{ airflow_config.core.home }}
+airflow_home = {{ airflow_config.home.path }}
 
 # The folder where your airflow pipelines live
 dags_folder = {{ airflow_config.core.dags_folder }}
 
 # The folder where airflow should store its log files. This location
-base_log_folder = {{ airflow_config.core.base_log_folder }}
+base_log_folder = {{ airflow_config.log.path }}
 
 # Airflow can remote logs storage
 remote_base_log_folder = {{ airflow_config.core.remote_base_log_folder }}
@@ -20,16 +20,16 @@ encrypt_s3_logs = {{ airflow_config.core.encrypt_s3_logs }}
 executor = {{ airflow_config.core.executor }}
 
 # The SqlAlchemy connection string to the metadata database.
-sql_alchemy_conn = {{ airflow_config.core.sql_alchemy_conn }}
+sql_alchemy_conn = {{ airflow_config.database.connection }}
 
 # The SqlAlchemy pool size is the maximum number of database connections
 # in the pool.
-sql_alchemy_pool_size = {{ airflow_config.core.sql_alchemy_pool_size }}
+sql_alchemy_pool_size = {{ airflow_config.database.pool_size }}
 
 # The SqlAlchemy pool recycle is the number of seconds a connection
 # can be idle in the pool before it is invalidated. This config does
 # not apply to sqlite.
-sql_alchemy_pool_recycle = {{ airflow_config.core.sql_alchemy_pool_recycle }}
+sql_alchemy_pool_recycle = {{ airflow_config.database.pool_recycle }}
 
 # The amount of parallelism as a setting to the executor. This defines
 # the max number of task instances that should run simultaneously

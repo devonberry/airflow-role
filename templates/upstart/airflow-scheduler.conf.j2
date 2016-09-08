@@ -6,19 +6,19 @@ start on started networking
 stop on (deconfiguring-networking or runlevel [016])
 
 respawn
-respawn limit {{ airflow_scheduler_respawn_limit_count }} {{ airflow_scheduler_respawn_limit_timeperiod }}
+respawn limit unlimited
 
-chdir {{ airflow_config.core.home }}
-setuid {{ airflow_user_name }}
-setgid {{ airflow_user_group }}
+chdir {{ airflow_config.home.path }}
+setuid {{ airflow_config.user.name }}
+setgid {{ airflow_config.user.group }}
 
 # Define environment variables
-env AIRFLOW_HOME="{{ airflow_config.core.home }}"
+env AIRFLOW_HOME="{{ airflow_config.home.path }}"
 env AIRFLOW_CONFIG="${AIRFLOW_HOME}/airflow.cfg"
-env AIRFLOW_BINARY_PATH="{{ airflow_virtualenv ~ '/bin' }}"
-env AIRFLOW_SCHEDULER_RUNS="{{ airflow_scheduler_runs }}"
-env AIRFLOW_SCHEDULER_PID_FILE="{{ airflow_scheduler_pid_file }}"
-env AIRFLOW_SCHEDULER_LOG_FILE="{{ airflow_scheduler_log_file }}"
+env AIRFLOW_BINARY_PATH="{{ airflow_config.environment.virtualenv ~ '/bin' }}"
+env AIRFLOW_SCHEDULER_RUNS="{{ airflow_config.scheduler.runs }}"
+env AIRFLOW_SCHEDULER_PID_FILE="{{ airflow_config.scheduler.pid_file }}"
+env AIRFLOW_SCHEDULER_LOG_FILE="{{ airflow_config.scheduler.log_file }}"
 
 export AIRFLOW_CONFIG
 export AIRFLOW_HOME

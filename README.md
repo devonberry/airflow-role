@@ -51,130 +51,158 @@ Role tests are done with Docker, Tox and testinfra in temporaly container
 
 ## Role Variables
 
+The `airflow_defaults_config` structure defines the variables and their defaults.
+These defaults get overlayed with `airflow_user_config`, so that playbooks can
+override whichever variables they see fit.
+
 > **Warning**
-> No Fernet key defined on configuration, so set your own before store passwords !
+> Make sure to set a fernet_key and secret_key below to ensure a secure installation.
 
 ### Default role variables
 
 ```yaml
-# Installation vars
-airflow_user_name: 'airflow'
-airflow_user_group: "{{ airflow_user_name }}"
-airflow_user_shell: '/bin/false'
-airflow_user_home_path: '/home/airflow'
-airflow_user_home_mode: '0700'
+## Playbooks should override this variable, as it merges on top of airflow_defaults_config below
+airflow_user_config: {}
 
-airflow_home_path: '/opt/airflow'
-airflow_home_owner: "{{ airflow_user_name }}"
-airflow_home_group: "{{ airflow_user_group }}"
-airflow_home_mode: '0755'
-airflow_home_for_all_users: true  # Whether to set AIRFLOW_HOME in all user profiles (except root
-
-airflow_log_path: '/var/log/airflow'
-airflow_log_owner: "{{ airflow_user_name }}"
-airflow_log_group: "{{ airflow_user_group }}"
-airflow_log_mode: '0755'
-
-airflow_pid_path: '/var/run/airflow'
-airflow_pid_owner: "{{ airflow_user_name }}"
-airflow_pid_group: "{{ airflow_user_group }}"
-airflow_pid_mode: '0755'
-
-airflow_virtualenv: "{{ airflow_user_home_path }}/venv"
-airflow_python_version: 'python2.7'
-
-# airflow_native_dependencies are defined in the native vars files
-
-# Helper package definitions to help assemble custom installs in airflow_python_packages
-airflow_python_packages_airflow:
-  - name: 'airflow'
-    version: '1.7.1.3'
-airflow_python_packages_hdfs:
-  - name: 'hdfs'
-    version: '2.0.10'
-airflow_python_packages_hive:
-  - name: 'thrift_sasl'
-    version: '0.2.1'
-airflow_python_packages_mysql:
-  - name: 'mysql-python'
-    version: '1.2.5'
-# The python dependencies to be installed (including airflow)
-airflow_python_packages: "{{ airflow_python_packages_hdfs + airflow_python_packages_hive + airflow_python_packages_mysql + airflow_python_packages_airflow }}"
-
-# Airflow modules to install (module native dependencies should be added to airflow_native_dependencies)
-airflow_modules:
-  - name: 'airflow[crypto]'
-  - name: 'airflow[hdfs]'
-  - name: 'airflow[hive]'
-  - name: 'airflow[mysql]'
-  - name: 'airflow[password]'
-  - name: 'airflow[s3]'
-
-
-# Services management
-airflow_managed_upstart_services: []
-airflow_managed_initd_services:
-  - 'airflow-scheduler'
-  - 'airflow-webserver'
-
-airflow_services_states:
-  - name: 'airflow-webserver'
-    enabled: True
-    state: 'started'
-  - name: 'airflow-scheduler'
-    enabled: True
-    state: 'started'
-
-# Webserver meta-service configuration (see airflow_defaults_config.webserver for server config)
-airflow_webserver_pid_file: "{{ airflow_pid_path }}/airflow-webserver.pid"
-airflow_webserver_log_file: "{{ airflow_log_path }}/airflow-webserver.log"
-airflow_webserver_debug: False
-airflow_webserver_respawn_limit_count: 5
-airflow_webserver_respawn_limit_timeperiod: 30
-
-# Scheduler service configuration
-airflow_scheduler_runs: 0
-airflow_scheduler_pid_file: "{{ airflow_pid_path }}/airflow-scheduler.pid"
-airflow_scheduler_log_file: "{{ airflow_log_path }}/airflow-scheduler.log"
-airflow_scheduler_respawn_limit_count: 5
-airflow_scheduler_respawn_limit_timeperiod: 30
-
-# Databases variables
-airflow_manage_database: True
-airflow_database_engine: 'mysql'
-
-# Set do_init to false if database already initialized
-airflow_do_init_db: True
-airflow_do_upgrade_db: True
-
-# Default configuration
+## Default configuration structure - the meat and potatoes of our config
 airflow_defaults_config:
+  ## airflow user configuration
+  user:
+    name: 'airflow'
+    group: 'airflow'
+    shell: '/bin/false'
+    path: '/home/airflow'
+    mode: '0700'
+  ## Home directory config
+  home:
+    path: '/opt/airflow'
+    owner: "{{ airflow_defaults_config.user.name }}"
+    group: "{{ airflow_defaults_config.user.group }}"
+    mode: '0755'
+    set_for_all_users: true  # Whether to set AIRFLOW_HOME in all user profiles (except root
+  ## Log directory config
+  log:
+    path: '/var/log/airflow'
+    owner: "{{ airflow_defaults_config.user.name }}"
+    group: "{{ airflow_defaults_config.user.group }}"
+    mode: '0755'
+    rotation:  # logrotate config
+      - filename: '/etc/logrotate.d/airflow'
+        log_pattern:
+          - "{{ airflow_defaults_config.log.path }}/*.log"
+        options:
+          - 'rotate 12'
+          - 'weekly'
+          - 'compress'
+          - 'delaycompress'
+          - "create 640 {{ airflow_defaults_config.log.owner }} {{ airflow_defaults_config.log.group }}"
+          - 'postrotate'
+          - 'endscript'
+  ## Process ID file config
+  pid:
+    path: '/var/run/airflow'
+    owner: "{{ airflow_defaults_config.user.name }}"
+    group: "{{ airflow_defaults_config.user.group }}"
+    mode: '0755'
+  ## corresponds to airflow.cfg [celery] section
+  celery:
+    celery_app_name: 'airflow.executors.celery_executor'
+    celeryd_concurrency: 16
+    worker_log_server_port: 8793
+    broker_url: 'sqla+mysql://airflow:airflow@localhost:3306/airflow'
+    celery_result_backend: 'db+mysql://airflow:airflow@localhost:3306/airflow'
+    flower_port: 5555
+    default_queue: 'default'
+  ## corresponds to airflow.cfg [core] section
   core:
-    home: "{{ airflow_home_path }}"
-    dags_folder: "{{ airflow_home_path ~ '/dags' }}"
-    base_log_folder: "{{ airflow_log_path }}"
+    dags_folder: "{{ airflow_defaults_config.home.path ~ '/dags' }}"
     remote_base_log_folder: ''
     remote_log_conn_id: ''
     encrypt_s3_logs: False
     executor: 'SequentialExecutor'
-    sql_alchemy_conn: 'sqlite:////opt/airflow/airflow.db'
-    sql_alchemy_pool_size: 5
-    sql_alchemy_pool_recycle: 3600
     parallelism: 32
     dag_concurrency: 16
     dags_are_paused_at_creation: True
     non_pooled_task_slot_count: 128
     max_active_runs_per_dag: 16
     load_examples: False
-    plugins_folder: "{{ airflow_home_path ~ '/plugins' }}"
+    plugins_folder: "{{ airflow_defaults_config.home.path ~ '/plugins' }}"
     fernet_key: 'cryptography_not_found_storing_passwords_in_plain_text'
     donot_pickle: False
     dagbag_import_timeout: 30
-
+  database:
+    init: true     # run airflow initdb
+    upgrade: true  # run airflow upgradedb
+    connection: 'sqlite:///{{ airflow_defaults_config.home.path }}/airflow.db'
+    pool_size: 5
+    pool_recycle: 3600
+  ## Runtime dependencies
+  dependencies:
+    # Native library dependencies
+    native: "{{ airflow_native_crypto + airflow_native_hive }}"  # defined in native vars files
+    # Python package dependencies
+    python: "{{ airflow_python_packages_airflow + airflow_python_packages_hdfs + airflow_python_packages_hive }}"
+    # Airflow modules to install
+    modules:
+      - name: 'crypto'
+      - name: 'hdfs'
+      - name: 'hive'
+      - name: 'password'
+  ## Python virtual environment configuration
+  environment:
+    virtualenv: "{{ airflow_user_home_path }}/venv"
+    python_version: 'python2.7'
+  ## DAG git repository config (optional), see http://docs.ansible.com/ansible/git_module.html for options
+  git:
+    repo: null
+    version: 'HEAD'
+  ## corresponds to airflow.cfg [email] section
+  email:
+    email_backend: 'airflow.utils.email.send_email_smtp'
+  ## corresponds to airflow.cfg [smtp] section
+  smtp:
+    smtp_host: 'localhost'
+    smtp_starttls: True
+    smtp_ssl: False
+    smtp_user: 'airflow'
+    smtp_port: 25
+    smtp_password: 'airflow'
+    smtp_mail_from: 'airflow@airflow.com'
+  ## corresponds to airflow.cfg [mesos] section
+  mesos:
+    master: 'localhost:5050'
+    framework_name: 'Airflow'
+    task_cpu: 1
+    task_memory: 256
+    checkpoint: False
+    failover_timeout: 604800
+    authenticate: False
+    default_principal: 'admin'
+    default_secret: 'admin'
+  ## corresponds to airflow.cfg [operators] section
   operators:
     default_owner: 'Airflow'
-
+  ### scheduler service configuration
+  scheduler:
+    sysinit: 'initd'   # 'initd', 'upstart' or null
+    enabled: true
+    runs: 0  # number of times for the scheduler to run before exiting, 0 = infinite
+    pid_file: "{{ airflow_defaults_config.pid.path }}/airflow-scheduler.pid"
+    log_file: "{{ airflow_defaults_config.log.path }}/airflow-scheduler.log"
+    job_heartbeat_sec: 5
+    scheduler_heartbeat_sec: 5
+    statsd_on: False
+    statsd_host: 'localhost'
+    statsd_port: 8125
+    statsd_prefix: 'airflow'
+    max_threads: 2
+  ## webserver configuration (airflow.cfg + additional config)
   webserver:
+    enabled: true
+    sysinit: 'initd'   # 'initd', 'upstart' or null
+    pid_file: "{{ airflow_defaults_config.pid.path }}/airflow-webserver.pid"
+    log_file: "{{ airflow_defaults_config.log.path }}/airflow-webserver.log"
+    debug: False
     base_url: 'http://localhost:8080'
     web_server_host: '0.0.0.0'
     web_server_port: 8080
@@ -186,64 +214,6 @@ airflow_defaults_config:
     authenticate: False
     auth_backend: null   # airflow.contrib.auth.backends.password_auth
     filter_by_owner: False
-
-  email:
-    email_backend: 'airflow.utils.email.send_email_smtp'
-
-  smtp:
-    smtp_host: 'localhost'
-    smtp_starttls: True
-    smtp_ssl: False
-    smtp_user: 'airflow'
-    smtp_port: 25
-    smtp_password: 'airflow'
-    smtp_mail_from: 'airflow@airflow.com'
-
-  celery:
-    celery_app_name: 'airflow.executors.celery_executor'
-    celeryd_concurrency: 16
-    worker_log_server_port: 8793
-    broker_url: 'sqla+mysql://airflow:airflow@localhost:3306/airflow'
-    celery_result_backend: 'db+mysql://airflow:airflow@localhost:3306/airflow'
-    flower_port: 5555
-    default_queue: 'default'
-
-  scheduler:
-    job_heartbeat_sec: 5
-    scheduler_heartbeat_sec: 5
-    statsd_on: False
-    statsd_host: 'localhost'
-    statsd_port: 8125
-    statsd_prefix: 'airflow'
-    max_threads: 2
-
-  mesos:
-    master: 'localhost:5050'
-    framework_name: 'Airflow'
-    task_cpu: 1
-    task_memory: 256
-    checkpoint: False
-    failover_timeout: 604800
-    authenticate: False
-    default_principal: 'admin'
-    default_secret: 'admin'
-
-airflow_user_config: {}
-airflow_config: "{{ airflow_defaults_config | combine(airflow_user_config, recursive=True) }}"
-
-# Logrotate configuration
-airflow_logrotate_config:
-  - filename: '/etc/logrotate.d/airflow'
-    log_pattern:
-      - "{{ airflow_log_path }}/*.log"
-    options:
-      - 'rotate 12'
-      - 'weekly'
-      - 'compress'
-      - 'delaycompress'
-      - "create 640 {{ airflow_log_owner }} {{ airflow_log_group }}"
-      - 'postrotate'
-      - 'endscript'
 ```
 
 ## Dependencies

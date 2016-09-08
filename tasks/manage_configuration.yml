@@ -5,28 +5,28 @@
 - name: 'Create airflow home directory'
   become: true
   file:
-    path: "{{ airflow_config.core.home }}"
-    owner: "{{ airflow_user_name }}"
-    group: "{{ airflow_user_group }}"
-    mode: "{{ airflow_home_mode }}"
+    path: "{{ airflow_config.home.path }}"
+    owner: "{{ airflow_config.home.owner }}"
+    group: "{{ airflow_config.home.group }}"
+    mode: "{{ airflow_config.home.mode }}"
     state: 'directory'
 
 - name: 'Create airflow DAG directory'
   become: true
   file:
     path: "{{ airflow_config.core.dags_folder }}"
-    owner: "{{ airflow_user_name }}"
-    group: "{{ airflow_user_group }}"
-    mode: "{{ airflow_home_mode }}"
+    owner: "{{ airflow_config.home.owner }}"
+    group: "{{ airflow_config.home.group }}"
+    mode: "{{ airflow_config.home.mode }}"
     state: 'directory'
 
 - name: 'Create airflow plugins directory'
   become: true
   file:
     path: "{{ airflow_config.core.plugins_folder }}"
-    owner: "{{ airflow_user_name }}"
-    group: "{{ airflow_user_group }}"
-    mode: "{{ airflow_home_mode }}"
+    owner: "{{ airflow_config.home.owner }}"
+    group: "{{ airflow_config.home.group }}"
+    mode: "{{ airflow_config.home.mode }}"
     state: 'directory'
 
 - name: 'Write airflow config file'
@@ -34,27 +34,27 @@
   template:
     src: "{{ role_path }}/templates/airflow.cfg.j2"
     dest: "{{ airflow_home_path }}/airflow.cfg"
-    owner: "{{ airflow_user_name }}"
-    group: "{{ airflow_user_group }}"
+    owner: "{{ airflow_config.home.owner }}"
+    group: "{{ airflow_config.home.group }}"
     mode: '0400'
   notify: 'Restart airflow'
 
 - name: 'Create airflow log folder'
   become: true
   file:
-    path: "{{ airflow_log_path }}"
-    owner: "{{ airflow_log_owner }}"
-    group: "{{ airflow_log_group }}"
-    mode: "{{ airflow_log_mode }}"
+    path: "{{ airflow_config.log.path }}"
+    owner: "{{ airflow_config.log.owner }}"
+    group: "{{ airflow_config.log.group }}"
+    mode: "{{ airflow_config.log.mode }}"
     state: 'directory'
 
 - name: 'Create airflow pid folder'
   become: true
   file:
-    path: "{{ airflow_pid_path }}"
-    owner: "{{ airflow_pid_owner }}"
-    group: "{{ airflow_pid_group }}"
-    mode: "{{ airflow_pid_mode }}"
+    path: "{{ airflow_config.pid.path }}"
+    owner: "{{ airflow_config.pid.owner }}"
+    group: "{{ airflow_config.pid.group }}"
+    mode: "{{ airflow_config.pid.mode }}"
     state: 'directory'
 
 - name: 'Configure airflow log rotation'
@@ -65,23 +65,23 @@
     owner: 'root'
     group: 'root'
     mode: '0644'
-  with_items: "{{ airflow_logrotate_config }}"
+  with_items: "{{ airflow_config.log.rotation }}"
 
 - name: 'Initialize airflow database'
   become: true
-  command: "{{ airflow_virtualenv }}/bin/airflow initdb"
+  command: "{{ airflow_config.environment.virtualenv }}/bin/airflow initdb"
   environment:
-    AIRFLOW_HOME: "{{ airflow_home_path }}"
+    AIRFLOW_HOME: "{{ airflow_config.home.path }}"
   when:
-    - "{{ airflow_do_init_db }}"
+    - "{{ airflow_config.database.init }}"
 
 - name: 'Upgrade airflow database'
   become: true
-  command: "{{ airflow_virtualenv }}/bin/airflow upgradedb"
+  command: "{{ airflow_config.environment.virtualenv }}/bin/airflow upgradedb"
   environment:
-    AIRFLOW_HOME: "{{ airflow_home_path }}"
+    AIRFLOW_HOME: "{{ airflow_config.home.path }}"
   when:
-    - "{{ airflow_do_upgrade_db }}"
+    - "{{ airflow_config.database.upgrade }}"
 
 - name: 'Setting AIRFLOW_HOME in users profiles'
   become: true
@@ -92,13 +92,13 @@
     group: 'root'
     mode: '0644'
   when:
-    - "{{ airflow_home_for_all_users }}"
+    - "{{ airflow_config.home.set_for_all_users }}"
 
 - name: 'Refreshing DAGs folder from git'
   become: true
   git:
-    repo: "{{ airflow_git.repo }}"
+    repo: "{{ airflow_config.git.repo }}"
     dest: "{{ airflow_config.core.dags_folder }}"
-    version: "{{ airflow_git.version }}"
+    version: "{{ airflow_config.git.version }}"
   when:
-    - "{{ airflow_git.repo }}"
+    - "{{ airflow_config.git.repo != None }}"

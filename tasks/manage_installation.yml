@@ -7,24 +7,24 @@
   package:
     name: "{{ item.name }}"
     state: "{{ item.state | default('present') }}"
-  with_items: "{{ airflow_native_dependencies }}"
+  with_items: "{{ airflow_config.dependencies.native }}"
 
 - name: 'Create airflow user'
   become: true
   user:
-    name: "{{ airflow_user_name }}"
+    name: "{{ airflow_config.user.name }}"
     createhome: True
-    home: "{{ airflow_user_home_path}}"
+    home: "{{ airflow_config.user.path}}"
     state: 'present'
-    shell: "{{ airflow_user_shell }}"
+    shell: "{{ airflow_config.user.shell }}"
 
 - name: 'Manage airflow user home directory permissions'
   become: true
   file:
-    path: "{{ airflow_user_home_path }}"
-    owner: "{{ airflow_user_name }}"
-    group: "{{ airflow_user_group }}"
-    mode: "{{ airflow_user_home_mode }}"
+    path: "{{ airflow_config.user.path }}"
+    owner: "{{ airflow_config.user.name }}"
+    group: "{{ airflow_config.user.group }}"
+    mode: "{{ airflow_config.user.mode }}"
 
 - name: 'Install airflow and python dependencies'
   become: true
@@ -32,15 +32,15 @@
     name: "{{ item.name }}"
     version: "{{ item.version }}"
     state: "{{ item.state | default('present') }}"
-    virtualenv: "{{ airflow_virtualenv }}"
-    virtualenv_python: "{{ airflow_python_version }}"
-  with_items: "{{ airflow_python_packages }}"
+    virtualenv: "{{ airflow_config.environment.virtualenv }}"
+    virtualenv_python: "{{ airflow_config.environment.python_version }}"
+  with_items: "{{ airflow_config.dependencies.python }}"
 
 - name: 'Install airflow modules'
   become: true
   pip:
-    name: "{{ item.name }}"
+    name: "{{ 'airflow[' + item.name + ']' }}"
     state: "{{ item.state | default('present') }}"
-    virtualenv: "{{ airflow_virtualenv }}"
-    virtualenv_python: "{{ airflow_python_version }}"
-  with_items: "{{ airflow_modules }}"
+    virtualenv: "{{ airflow_config.environment.virtualenv }}"
+    virtualenv_python: "{{ airflow_config.environment.python_version }}"
+  with_items: "{{ airflow_config.dependencies.modules }}"

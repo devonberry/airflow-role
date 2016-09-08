@@ -6,23 +6,23 @@ start on started networking
 stop on (deconfiguring-networking or runlevel [016])
 
 respawn
-respawn limit {{ airflow_webserver_respawn_limit_count }} {{ airflow_webserver_respawn_limit_timeperiod }}
+respawn limit unlimited
 
-chdir {{ airflow_config.core.home }}
-setuid {{ airflow_user_name }}
-setgid {{ airflow_user_group }}
+chdir {{ airflow_config.home.path }}
+setuid {{ airflow_config.user.name }}
+setgid {{ airflow_config.user.group }}
 
 # Define environment variables
-env AIRFLOW_HOME="{{ airflow_config.core.home }}"
+env AIRFLOW_HOME="{{ airflow_config.home.path }}"
 env AIRFLOW_CONFIG="${AIRFLOW_HOME}/airflow.cfg"
-env AIRFLOW_BINARY_PATH="{{ airflow_virtualenv ~ '/bin' }}"
+env AIRFLOW_BINARY_PATH="{{ airflow_config.environment.virtualenv ~ '/bin' }}"
 env AIRFLOW_WEBSERVER_PORT="{{ airflow_config.webserver.web_server_port }}"
 env AIRFLOW_WEBSERVER_WORKERS="{{ airflow_config.webserver.workers }}"
 env AIRFLOW_WEBSERVER_WORKER_CLASS="{{ airflow_config.webserver.worker_class }}"
 env AIRFLOW_WEBSERVER_WORKER_TIMEOUT="{{ airflow_config.webserver.web_server_worker_timeout }}"
 env AIRFLOW_WEBSERVER_HOSTNAME="{{ airflow_config.webserver.web_server_host }}"
-env AIRFLOW_WEBSERVER_PID_FILE="{{ airflow_webserver_pid_file }}"
-env AIRFLOW_WEBSERVER_LOG_FILE="{{ airflow_webserver_log_file }}"
+env AIRFLOW_WEBSERVER_PID_FILE="{{ airflow_config.scheduler.pid_file }}"
+env AIRFLOW_WEBSERVER_LOG_FILE="{{ airflow_config.scheduler.log_file }}"
 {% if airflow_webserver_debug %}
 env AIRFLOW_WEBSERVER_DEBUG="--debug"
 {% endif %}
