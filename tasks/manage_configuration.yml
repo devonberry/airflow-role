@@ -33,7 +33,7 @@
   become: true
   template:
     src: "{{ role_path }}/templates/airflow.cfg.j2"
-    dest: "{{ airflow_home_path }}/airflow.cfg"
+    dest: "{{ airflow_config.home.path }}/airflow.cfg"
     owner: "{{ airflow_config.home.owner }}"
     group: "{{ airflow_config.home.group }}"
     mode: '0400'
