@@ -125,6 +125,10 @@ airflow_defaults:
   git:
     repo: null
     version: 'HEAD'
+    key_file: null
+    accept_hostkey: false
+    force: false
+    ssh_opts: null
   ## Alias to workaround YAML limitation
   home: *airflow_home
   ## corresponds to airflow.cfg [email] section
