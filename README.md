@@ -51,9 +51,9 @@ Role tests are done with Docker, Tox and testinfra in temporaly container
 
 ## Role Variables
 
-The `airflow_defaults_config` structure defines the variables and their defaults.
-These defaults get overlayed with `airflow_user_config`, so that playbooks can
-override whichever variables they see fit.
+The `airflow_defaults` structure defines the variables and their defaults.
+These defaults get overlayed by `airflow`, so that playbooks can override
+whichever variables they see fit.
 
 > **Warning**
 > Make sure to set a fernet_key and secret_key below to ensure a secure installation.
@@ -61,8 +61,8 @@ override whichever variables they see fit.
 ### Default role variables
 
 ```yaml
-## Playbooks should override this variable, as it merges on top of airflow_defaults_config below
-airflow_user_config: {}
+## Playbooks should override this variable, as it merges on top of airflow_defaults below
+airflow: {}
 
 ## Default configuration structure - the meat and potatoes of our config
 airflow_defaults_config:
@@ -214,6 +214,9 @@ airflow_defaults_config:
     authenticate: False
     auth_backend: null   # airflow.contrib.auth.backends.password_auth
     filter_by_owner: False
+
+## Merge the user config on top of defaults to get our final config
+airflow_config: "{{ airflow_defaults | combine(airflow, recursive=True) }}"
 ```
 
 ## Dependencies
@@ -231,6 +234,10 @@ None
 MIT
 
 ## Author Information
+
+Devon Berry
+
+based on the ansible-role-airflow Ansible Galaxy role by
 
 Alexandre Chaussier (for Infopen company)
 - http://www.infopen.pro
