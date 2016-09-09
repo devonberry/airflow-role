@@ -46,6 +46,52 @@
   notify: 'Restart airflow-webserver'
   when: "{{ airflow_config.webserver.sysinit == 'upstart' }}"
 
+- name: 'Refreshing DAGs from git'
+  local_action:
+    module: git
+    repo: "{{ airflow_config.git.repo }}"
+    dest: "{{ airflow_config.git.local_dest }}"
+    version: "{{ airflow_config.git.version }}"
+    key_file: "{{ airflow_config.git.key_file }}"
+    accept_hostkey: "{{ airflow_config.git.accept_hostkey }}"
+    force: "{{ airflow_config.git.force }}"
+    ssh_opts: "{{ airflow_config.git.ssh_opts }}"
+  when:
+    - "{{ airflow_config.git.repo != None }}"
+  register: airflow_git_result
+
+- name: 'Stopping services to deploy DAGs'
+  become: true
+  service:
+    name: "{{ item.name }}"
+    enabled: "{{ item.enabled | default(False) }}"
+    state: "{{ 'stopped' }}"
+  with_items: "{{ [airflow_config.scheduler, airflow_config.webserver] }}"
+  when:
+    - "{{ airflow_config.git.repo != None }}"
+    - airflow_git_result == 0
+
+- name: 'Cleaning stale DAGs from host'
+  become: true
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_fileglob:
+    - "{{ airflow_config.core.dags_folder ~ '/*' }}"
+  when:
+    - "{{ airflow_config.git.repo != None }}"
+    - airflow_git_result == 0
+
+- name: 'Copying DAGs to host'
+  become: true
+  copy:
+    src: "{{ airflow_config.git.local_dest }}"
+    dest: "{{ airflow_config.core.dags_folder }}"
+    owner: "{{ airflow_user }}"
+  when:
+    - "{{ airflow_config.git.repo != None }}"
+    - airflow_git_result == 0
+
 - name: 'Manage airflow services states'
   become: true
   service:

@@ -45,6 +45,9 @@ airflow_home: &airflow_home
   mode: '0755'
   set_for_all_users: true  # Whether to set AIRFLOW_HOME in all user profiles except root
 
+airflow_dags_folder: &airflow_dags_folder  "{{ airflow_home.path  ~ '/dags' }}"
+airflow_plugins_folder: &airflow_plugins_folder  "{{ airflow_home.path  ~ '/plugins' }}"
+
 ## Log directory config
 airflow_log: &airflow_log
   path: '/var/log/airflow'
@@ -84,7 +87,7 @@ airflow_defaults:
     default_queue: 'default'
   ## corresponds to airflow.cfg [core] section
   core:
-    dags_folder: "{{ airflow_home.path ~ '/dags' }}"
+    dags_folder: *airflow_dags_folder
     remote_base_log_folder: ''
     remote_log_conn_id: ''
     encrypt_s3_logs: False
@@ -95,7 +98,7 @@ airflow_defaults:
     non_pooled_task_slot_count: 128
     max_active_runs_per_dag: 16
     load_examples: False
-    plugins_folder: "{{ airflow_home.path ~ '/plugins' }}"
+    plugins_folder: *airflow_plugins_folder
     fernet_key: 'cryptography_not_found_storing_passwords_in_plain_text'
     donot_pickle: False
     dagbag_import_timeout: 30
@@ -124,6 +127,7 @@ airflow_defaults:
   ## DAG git repository config (optional), see http://docs.ansible.com/ansible/git_module.html for options
   git:
     repo: null
+    local_dest: /tmp/airflow  # The local temporary directory
     version: 'HEAD'
     key_file: null
     accept_hostkey: false

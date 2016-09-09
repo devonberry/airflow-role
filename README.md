@@ -61,49 +61,64 @@ whichever variables they see fit.
 ### Default role variables
 
 ```yaml
-## Playbooks should override this variable, as it merges on top of airflow_defaults below
+# Default configuration structures - the meat and potatoes of our config
+## The `airflow` variable is intended to provide an easy means for playbooks to
+## override `airflow_defaults`.  Playbooks can also reset values in the following
+## so that they get picked up in the defaults:
+##   * airflow_user
+##   * airflow_home
+##   * airflow_log
+##   * airflow_pid
+
 airflow: {}
 
-## Default configuration structure - the meat and potatoes of our config
-airflow_defaults_config:
-  ## airflow user configuration
-  user:
-    name: 'airflow'
-    group: 'airflow'
-    shell: '/bin/false'
-    path: '/home/airflow'
-    mode: '0700'
-  ## Home directory config
-  home:
-    path: '/opt/airflow'
-    owner: "{{ airflow_defaults_config.user.name }}"
-    group: "{{ airflow_defaults_config.user.group }}"
-    mode: '0755'
-    set_for_all_users: true  # Whether to set AIRFLOW_HOME in all user profiles (except root
-  ## Log directory config
-  log:
-    path: '/var/log/airflow'
-    owner: "{{ airflow_defaults_config.user.name }}"
-    group: "{{ airflow_defaults_config.user.group }}"
-    mode: '0755'
-    rotation:  # logrotate config
-      - filename: '/etc/logrotate.d/airflow'
-        log_pattern:
-          - "{{ airflow_defaults_config.log.path }}/*.log"
-        options:
-          - 'rotate 12'
-          - 'weekly'
-          - 'compress'
-          - 'delaycompress'
-          - "create 640 {{ airflow_defaults_config.log.owner }} {{ airflow_defaults_config.log.group }}"
-          - 'postrotate'
-          - 'endscript'
-  ## Process ID file config
-  pid:
-    path: '/var/run/airflow'
-    owner: "{{ airflow_defaults_config.user.name }}"
-    group: "{{ airflow_defaults_config.user.group }}"
-    mode: '0755'
+## airflow user configuration
+airflow_user: &airflow_user
+  name: 'airflow'
+  group: 'airflow'
+  shell: '/bin/false'
+  path: '/home/airflow'
+  mode: '0700'
+
+## Home directory config
+airflow_home: &airflow_home
+  path: '/opt/airflow'
+  owner: "{{ airflow_user.name }}"
+  group: "{{ airflow_user.group }}"
+  mode: '0755'
+  set_for_all_users: true  # Whether to set AIRFLOW_HOME in all user profiles except root
+
+airflow_dags_folder: &airflow_dags_folder  "{{ airflow_home.path  ~ '/dags' }}"
+airflow_plugins_folder: &airflow_plugins_folder  "{{ airflow_home.path  ~ '/plugins' }}"
+
+## Log directory config
+airflow_log: &airflow_log
+  path: '/var/log/airflow'
+  owner: "{{ airflow_user.name }}"
+  group: "{{ airflow_user.group }}"
+  mode: '0755'
+  rotation:  # logrotate config
+    - filename: '/etc/logrotate.d/airflow'
+      log_pattern:
+        - "/var/log/airflow/*.log"
+      options:
+        - 'rotate 12'
+        - 'weekly'
+        - 'compress'
+        - 'delaycompress'
+        - "create 640 {{ airflow_user.name }} {{ airflow_user.group }}"
+        - 'postrotate'
+        - 'endscript'
+
+## Process ID file config
+airflow_pid: &airflow_pid
+  path: '/var/run/airflow'
+  owner: "{{ airflow_user.name }}"
+  group: "{{ airflow_user.group }}"
+  mode: '0755'
+
+## The rest of our airflow configuration
+airflow_defaults:
   ## corresponds to airflow.cfg [celery] section
   celery:
     celery_app_name: 'airflow.executors.celery_executor'
@@ -115,7 +130,7 @@ airflow_defaults_config:
     default_queue: 'default'
   ## corresponds to airflow.cfg [core] section
   core:
-    dags_folder: "{{ airflow_defaults_config.home.path ~ '/dags' }}"
+    dags_folder: *airflow_dags_folder
     remote_base_log_folder: ''
     remote_log_conn_id: ''
     encrypt_s3_logs: False
@@ -126,14 +141,14 @@ airflow_defaults_config:
     non_pooled_task_slot_count: 128
     max_active_runs_per_dag: 16
     load_examples: False
-    plugins_folder: "{{ airflow_defaults_config.home.path ~ '/plugins' }}"
+    plugins_folder: *airflow_plugins_folder
     fernet_key: 'cryptography_not_found_storing_passwords_in_plain_text'
     donot_pickle: False
     dagbag_import_timeout: 30
   database:
     init: true     # run airflow initdb
     upgrade: true  # run airflow upgradedb
-    connection: 'sqlite:///{{ airflow_defaults_config.home.path }}/airflow.db'
+    connection: 'sqlite:///{{ airflow_home.path }}/airflow.db'
     pool_size: 5
     pool_recycle: 3600
   ## Runtime dependencies
@@ -150,12 +165,19 @@ airflow_defaults_config:
       - name: 'password'
   ## Python virtual environment configuration
   environment:
-    virtualenv: "{{ airflow_user_home_path }}/venv"
+    virtualenv: "{{ airflow_home.path }}/venv"
     python_version: 'python2.7'
   ## DAG git repository config (optional), see http://docs.ansible.com/ansible/git_module.html for options
   git:
     repo: null
+    local_dest: /tmp/airflow  # The local temporary directory
     version: 'HEAD'
+    key_file: null
+    accept_hostkey: false
+    force: false
+    ssh_opts: null
+  ## Alias to workaround YAML limitation
+  home: *airflow_home
   ## corresponds to airflow.cfg [email] section
   email:
     email_backend: 'airflow.utils.email.send_email_smtp'
@@ -182,27 +204,33 @@ airflow_defaults_config:
   ## corresponds to airflow.cfg [operators] section
   operators:
     default_owner: 'Airflow'
+  ## Alias to workaround YAML limitation
+  log: *airflow_log
+  ## Alias to workaround YAML limitation
+  pid: *airflow_pid
   ### scheduler service configuration
   scheduler:
     sysinit: 'initd'   # 'initd', 'upstart' or null
     enabled: true
     runs: 0  # number of times for the scheduler to run before exiting, 0 = infinite
-    pid_file: "{{ airflow_defaults_config.pid.path }}/airflow-scheduler.pid"
-    log_file: "{{ airflow_defaults_config.log.path }}/airflow-scheduler.log"
+    pid_file: "{{ airflow_pid.path }}/airflow-scheduler.pid"
+    log_file: "{{ airflow_log.path }}/airflow-scheduler.log"
     job_heartbeat_sec: 5
     scheduler_heartbeat_sec: 5
-    statsd_on: False
+    statsd_on: false
     statsd_host: 'localhost'
     statsd_port: 8125
     statsd_prefix: 'airflow'
     max_threads: 2
+  ## Alias to workaround YAML limitation
+  user: *airflow_user
   ## webserver configuration (airflow.cfg + additional config)
   webserver:
     enabled: true
     sysinit: 'initd'   # 'initd', 'upstart' or null
-    pid_file: "{{ airflow_defaults_config.pid.path }}/airflow-webserver.pid"
-    log_file: "{{ airflow_defaults_config.log.path }}/airflow-webserver.log"
-    debug: False
+    pid_file: "{{ airflow_pid.path }}/airflow-webserver.pid"
+    log_file: "{{ airflow_log.path }}/airflow-webserver.log"
+    debug: false
     base_url: 'http://localhost:8080'
     web_server_host: '0.0.0.0'
     web_server_port: 8080
@@ -210,10 +238,10 @@ airflow_defaults_config:
     secret_key: 'temporary_key'
     workers: 4
     worker_class: sync
-    expose_config: True
-    authenticate: False
-    auth_backend: null   # airflow.contrib.auth.backends.password_auth
-    filter_by_owner: False
+    expose_config: true
+    authenticate: true
+    auth_backend: airflow.contrib.auth.backends.password_auth
+    filter_by_owner: false
 
 ## Merge the user config on top of defaults to get our final config
 airflow_config: "{{ airflow_defaults | combine(airflow, recursive=True) }}"

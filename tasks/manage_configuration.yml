@@ -93,16 +93,3 @@
     mode: '0644'
   when:
     - "{{ airflow_config.home.set_for_all_users }}"
-
-- name: 'Refreshing DAGs folder from git'
-  become: true
-  git:
-    repo: "{{ airflow_config.git.repo }}"
-    dest: "{{ airflow_config.core.dags_folder }}"
-    version: "{{ airflow_config.git.version }}"
-    key_file: "{{ airflow_config.git.key_file }}"
-    accept_hostkey: "{{ airflow_config.git.accept_hostkey }}"
-    force: "{{ airflow_config.git.force }}"
-    ssh_opts: "{{ airflow_config.git.ssh_opts }}"
-  when:
-    - "{{ airflow_config.git.repo != None }}"
