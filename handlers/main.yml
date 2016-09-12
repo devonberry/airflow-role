@@ -7,8 +7,8 @@
   service:
     name: "{{ item.name }}"
     state: 'restarted'
-  with_items: "{{ airflow_services_states }}"
-  when: "{{ item.state == 'started' }}"
+  with_items: "{{ [airflow_config.scheduler, airflow_config.webserver] }}"
+  when: "{{ item.enabled == True }}"
 
 
 - name: 'Restart airflow-webserver'
@@ -16,8 +16,8 @@
   service:
     name: "{{ item.name }}"
     state: 'restarted'
-  with_items: "{{ airflow_services_states }}"
-  when: "{{ (item.name == 'airflow-webserver') and (item.state == 'started') }}"
+  with_items: "{{ [airflow_config.webserver] }}"
+  when: "{{ item.enabled == True }}"
 
 
 - name: 'Restart airflow-scheduler'
@@ -25,5 +25,5 @@
   service:
     name: "{{ item.name }}"
     state: 'restarted'
-  with_items: "{{ airflow_services_states }}"
-  when: "{{ (item.name == 'airflow-scheduler') and (item.state == 'started') }}"
+  with_items: "{{ [airflow_config.scheduler] }}"
+  when: "{{ item.enabled == True }}"
