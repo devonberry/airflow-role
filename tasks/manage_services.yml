@@ -47,6 +47,7 @@
   when: "{{ airflow_config.webserver.sysinit == 'upstart' }}"
 
 - name: 'Refreshing DAGs from git'
+  become: false
   local_action:
     module: git
     repo: "{{ airflow_config.git.repo }}"
@@ -58,18 +59,16 @@
     ssh_opts: "{{ airflow_config.git.ssh_opts }}"
   when:
     - "{{ airflow_config.git.repo != None }}"
-  register: airflow_git_result
 
 - name: 'Stopping services to deploy DAGs'
   become: true
   service:
-    name: "{{ item.name }}"
+    name: "{{ item.service_name }}"
     enabled: "{{ item.enabled | default(False) }}"
     state: "{{ 'stopped' }}"
   with_items: "{{ [airflow_config.scheduler, airflow_config.webserver] }}"
   when:
     - "{{ airflow_config.git.repo != None }}"
-    - airflow_git_result == 0
 
 - name: 'Cleaning stale DAGs from host'
   become: true
@@ -80,7 +79,6 @@
     - "{{ airflow_config.core.dags_folder ~ '/*' }}"
   when:
     - "{{ airflow_config.git.repo != None }}"
-    - airflow_git_result == 0
 
 - name: 'Copying DAGs to host'
   become: true
@@ -90,12 +88,19 @@
     owner: "{{ airflow_user }}"
   when:
     - "{{ airflow_config.git.repo != None }}"
-    - airflow_git_result == 0
+
+- name: 'Cleanup temp DAG files'
+  become: false
+  file:
+    path: "{{ airflow_config.git.local_dest }}"
+    state: absent
+  when:
+    - "{{ airflow_config.git.repo != None }}"
 
 - name: 'Manage airflow services states'
   become: true
   service:
-    name: "{{ item.name }}"
+    name: "{{ item.service_name }}"
     enabled: "{{ item.enabled | default(False) }}"
     state: "{{ 'started' if item.enabled else 'stopped' }}"
   with_items: "{{ [airflow_config.scheduler, airflow_config.webserver] }}"

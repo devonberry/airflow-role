@@ -167,8 +167,9 @@ airflow_defaults:
   pid: *airflow_pid
   ### scheduler service configuration
   scheduler:
-    sysinit: 'initd'   # 'initd', 'upstart' or null
     enabled: true
+    service_name: 'airflow-scheduler'  # This name currently cannot be changed
+    sysinit: 'initd'   # 'initd', 'upstart' or null
     runs: 0  # number of times for the scheduler to run before exiting, 0 = infinite
     pid_file: "{{ airflow_pid.path }}/airflow-scheduler.pid"
     log_file: "{{ airflow_log.path }}/airflow-scheduler.log"
@@ -184,6 +185,7 @@ airflow_defaults:
   ## webserver configuration (airflow.cfg + additional config)
   webserver:
     enabled: true
+    service_name: 'airflow-webserver'  # This name currently cannot be changed
     sysinit: 'initd'   # 'initd', 'upstart' or null
     pid_file: "{{ airflow_pid.path }}/airflow-webserver.pid"
     log_file: "{{ airflow_log.path }}/airflow-webserver.log"
