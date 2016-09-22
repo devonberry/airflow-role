@@ -105,7 +105,7 @@
 
 - name: 'Create web admin user'
   become: true
-  command: "{{ airflow_config.environment.virtualenv }}/bin/python -f /tmp/create_web_admin.py"
+  command: "{{ airflow_config.environment.virtualenv }}/bin/python /tmp/create_web_admin.py"
   environment:
     AIRFLOW_HOME: "{{ airflow_config.home.path }}"
   when:
