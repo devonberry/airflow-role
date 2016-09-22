@@ -190,6 +190,9 @@ airflow_defaults:
     pid_file: "{{ airflow_pid.path }}/airflow-webserver.pid"
     log_file: "{{ airflow_log.path }}/airflow-webserver.log"
     debug: false
+    admin_user: null      # set this to a value to automatically create a web admin user
+    admin_email: null     # set this as well to create a web admin user
+    admin_password: null  # set this as well to create a web admin user
     base_url: 'http://localhost:8080'
     web_server_host: '0.0.0.0'
     web_server_port: 8080

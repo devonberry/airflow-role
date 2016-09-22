@@ -93,3 +93,31 @@
     mode: '0644'
   when:
     - "{{ airflow_config.home.set_for_all_users }}"
+
+- name: 'Copy script to create web admin user'
+  template:
+    src: "{{ role_path }}/templates/create_web_admin.py.j2"
+    dest: '/tmp/create_web_admin.py'
+  when:
+    - "{{ airflow_config.webserver.enabled }}"
+    - "{{ airflow_config.webserver.auth_backend != None }}"
+    - "{{ airflow_config.webserver.admin_user != None }}"
+
+- name: 'Create web admin user'
+  become: true
+  command: "{{ airflow_config.environment.virtualenv }}/bin/python -f /tmp/create_web_admin.py"
+  environment:
+    AIRFLOW_HOME: "{{ airflow_config.home.path }}"
+  when:
+    - "{{ airflow_config.webserver.enabled }}"
+    - "{{ airflow_config.webserver.auth_backend != None }}"
+    - "{{ airflow_config.webserver.admin_user != None }}"
+
+- name: 'Cleanup web admin user creation script'
+  file:
+    path: "/tmp/create_web_admin.py'"
+    state: 'absent'
+  when:
+    - "{{ airflow_config.webserver.enabled }}"
+    - "{{ airflow_config.webserver.auth_backend != None }}"
+    - "{{ airflow_config.webserver.admin_user != None }}"

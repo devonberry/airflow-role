@@ -1,0 +1,16 @@
+# Creates the admin user for airflow-webserver per
+# https://airflow.incubator.apache.org/security.html
+
+import airflow
+from airflow import models, settings
+from airflow.contrib.auth.backends.password_auth import PasswordUser
+
+user = PasswordUser( models.User() )
+user.username = '{{ airflow_config.webserver.admin_user }}'
+user.email = '{{ airflow_config.webserver.admin_email }}'
+user.password = '{{ airflow_config.webserver.admin_password }}'
+session = settings.Session()
+session.add(user)
+session.commit()
+session.close()
+exit()
