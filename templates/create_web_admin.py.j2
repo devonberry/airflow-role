@@ -9,8 +9,14 @@ user = PasswordUser( models.User() )
 user.username = '{{ airflow_config.webserver.admin_user }}'
 user.email = '{{ airflow_config.webserver.admin_email }}'
 user.password = '{{ airflow_config.webserver.admin_password }}'
+
+# TODO: Look the user up first and just set password and email if it already
+#       exists instead of this lame exception handling
 session = settings.Session()
-session.add(user)
-session.commit()
+try:
+  session.add(user)
+  session.commit()
+except:
+  pass
+
 session.close()
-exit()

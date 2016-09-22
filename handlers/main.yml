@@ -3,27 +3,31 @@
 # Handlers main file for airflow role
 
 - name: 'Restart airflow'
-  become: True
+  become: true
   service:
     name: "{{ item.name }}"
     state: 'restarted'
-  with_items: "{{ [airflow_config.scheduler, airflow_config.webserver] }}"
+  with_items:
+    - "{{ airflow_config.webserver }}"
+    - "{{ airflow_config.scheduler }}"
   when: "{{ item.enabled == True }}"
 
 
 - name: 'Restart airflow-webserver'
-  become: True
+  become: true
   service:
     name: "{{ item.name }}"
     state: 'restarted'
-  with_items: "{{ [airflow_config.webserver] }}"
+  with_items:
+    - "{{ airflow_config.webserver }}"
   when: "{{ item.enabled == True }}"
 
 
 - name: 'Restart airflow-scheduler'
-  become: True
+  become: true
   service:
     name: "{{ item.name }}"
     state: 'restarted'
-  with_items: "{{ [airflow_config.scheduler] }}"
+  with_items:
+    - "{{ airflow_config.scheduler }}"
   when: "{{ item.enabled == True }}"
