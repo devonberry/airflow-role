@@ -82,6 +82,7 @@
     src: "{{ airflow_config.git.local_dest ~ '/' }}"
     dest: "{{ airflow_config.core.dags_folder }}"
     owner: "{{ airflow_user.name }}"
+    group: "{{ airflow_user.group }}"
   when:
     - "{{ airflow_config.git.repo != None }}"
 
