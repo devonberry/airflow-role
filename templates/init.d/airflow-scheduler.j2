@@ -15,7 +15,7 @@ log_file="{{ airflow_config.scheduler.log_file }}"
 cmd="env PATH=$dir:$PATH AIRFLOW_HOME={{ airflow_config.home.path }} airflow scheduler --daemon --num_runs {{ airflow_config.scheduler.runs }} --pid ${pid_file} --log-file ${log_file}"
 user="{{ airflow_config.user.name }}"
 
-name=`basename $0`
+name="{{ airflow_config.scheduler.service_name }}"
 stdout_log="{{ airflow_config.log.path }}/$name.out"
 stderr_log="{{ airflow_config.log.path }}/$name.err"
 

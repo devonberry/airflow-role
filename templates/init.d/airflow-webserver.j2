@@ -18,7 +18,7 @@ log_file="{{ airflow_config.webserver.log_file }}"
 cmd="env PATH=$dir:$PATH AIRFLOW_HOME={{ airflow_config.home.path }} airflow webserver --daemon --pid ${pid_file} --log-file ${log_file} ${debug}"
 user="{{ airflow_config.user.name }}"
 
-name=`basename $0`
+name="{{ airflow_config.webserver.service_name }}"
 stdout_log="{{ airflow_config.log.path }}/$name.out"
 stderr_log="{{ airflow_config.log.path }}/$name.err"
 
