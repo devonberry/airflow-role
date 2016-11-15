@@ -18,6 +18,12 @@
     state: 'present'
     shell: "{{ airflow_config.user.shell }}"
 
+- name: 'Create airflow group'
+  become: true
+  group:
+    name: "{{ airflow_config.user.group}}"
+    state: 'present'
+
 - name: 'Manage airflow user home directory permissions'
   become: true
   file:
